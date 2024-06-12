@@ -77,10 +77,23 @@ import httpx
 def run_module():
     # define available arguments/parameters a user can pass to the module
     module_args = dict(
-        name=dict(type='str', required=True),
-        new=dict(type='bool', required=False, default=False)
+        endpoint_url=dict(type='str', required=True),
+        model_name=dict(type='str', required=True),
+        user_content=dict(type='str', required=True),
+        system_content=dict(type='str', required=False, default=None),
+        tls_insecure=dict(type='bool', required=False, default=False),
+        api_key=dict(type='str', required=False, default='api_key'),
+        timeout=dict(type='int', required=False, default=30),
+        tls_client_cert=dict(type='str', required=False, default=None),
+        tls_client_key=dict(type='str', required=False, default=None),
+        tls_client_passwd=dict(type='str', required=False, default=None, no_log=True),
+        temperature=dict(type='float', required=False, default=0.1),
+        max_tokens=dict(type='int', required=False, default=100),
+        top_p=dict(type='int', required=False, default=1),
+        frequency_penalty=dict(type='int', required=False, default=0),
+        presence_penalty=dict(type='int', required=False, default=0)
     )
-
+    
     # seed the result dict in the object
     # we primarily care about changed and state
     # changed is if this module effectively modified the target
@@ -107,59 +120,48 @@ def run_module():
     if module.check_mode:
         module.exit_json(**result)
 
-    # manipulate or modify the state as needed (this is going to be the
-    # part where your module will do what it needs to do)
-    result['original_message'] = module.params['name']
-    result['message'] = 'goodbye'
+    # Create OpenAI chat message input
+    contentMessages = []
+    userContentMessage = {"role": "user", "content": module.params['user_content']}
+    if module.params['system_content'] == None:
+        contentMessages = [ userContentMessage ]
+    else:
+        contentMessages = [ {"role": "system", "content": module.params['system_content']}, userContentMessage ]
+    
+    # store requested chat messages
+    result['original_messages'] = contentMessages
 
-
-    endpoint_url = "http://127.0.0.1:8000/v1"
-    model_name = "models/merlinite-7b-lab-Q4_K_M.gguf"
-    tls_insecure = True
-    api_key="no_api_key",
-    tls_client_cert = None
-    tls_client_key = None
-    tls_client_passwd = None
-
-    cert = None #(tls_client_cert, tls_client_key, tls_client_passwd)
-    verify = not tls_insecure
+    # Apply TLS security to API Call based on input parameters
+    cert = None
+    if module.params['tls_client_cert'] != None or module.params['tls_client_key'] != None or module.params['tls_client_passwd'] != None:
+        cert = (module.params['tls_client_cert'], module.params['tls_client_key'], module.params['tls_client_passwd'])
+    tls_verify = not module.params['tls_insecure']
 
     try:
         openai_client = OpenAI(
-            base_url=endpoint_url,
-            api_key= api_key,
-            timeout=httpx.Timeout(timeout=30.0),
-            http_client=httpx.Client(cert=cert, verify=verify),
+            base_url = module.params['endpoint_url'],
+            api_key = module.params['api_key'],
+            timeout = httpx.Timeout(timeout=module.params['timeout']),
+            http_client=httpx.Client(cert=cert, verify=tls_verify)
         )
 
         completion = openai_client.chat.completions.create(
-            model=model_name,
-            messages=[
-                {"role": "system", "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."},
-                {"role": "user", "content": "Compose a poem that explains the concept of recursion in programming."}
-            ],
-            temperature=0.1,
-            max_tokens=100,
-            top_p=1,
-            frequency_penalty=0,
-            presence_penalty=0
+            model=module.params['model_name'],
+            messages=contentMessages,
+            temperature=module.params['temperature'],
+            max_tokens=module.params['max_tokens'],
+            top_p=module.params['top_p'],
+            frequency_penalty=module.params['frequency_penalty'],
+            presence_penalty=module.params['presence_penalty']
         )
 
-        result['result'] = completion.choices[0].message.content
+        result['response'] = completion.choices[0].message.content
 
     except openai.APIConnectionError as e:
-        module.fail_json(msg=f"Unable to connect to endpoint: {endpoint_url}", **result)
+        module.fail_json(msg=f"Unable to connect to endpoint: {module.params['endpoint_url']}", **result)
         
-    # use whatever logic you need to determine whether or not this module
-    # made any modifications to your target
-    if module.params['new']:
-        result['changed'] = True
-
-    # during the execution of the module, if there is an exception or a
-    # conditional state that effectively causes a failure, run
-    # AnsibleModule.fail_json() to pass in the message and the result
-    if module.params['name'] == 'fail me':
-        module.fail_json(msg='You requested this to fail', **result)
+    # Assuming that successful API invocation = a change
+    result['changed'] = True
 
     # in the event of a successful module execution, you will want to
     # simple AnsibleModule.exit_json(), passing the key/value results
