@@ -7,27 +7,77 @@ __metaclass__ = type
 
 DOCUMENTATION = r'''
 ---
-module: openai
+module: openai-chat
 
-short_description: Ansible module to interface with OpenAI compliant APIs
+short_description: Ansible module to interface with OpenAI compliant APIs for Chat Completion
 
 # If this is part of a collection, you need to use semantic versioning,
 # i.e. the version is of the form "2.5.0" and not "2.4".
 version_added: "1.0.0"
 
-description: This is an Ansible module used to interface with OpenAI compliant APIs from Ansible playbooks.
+description: This is an Ansible module used to interface with OpenAI compliant APIs from Ansible playbooks for Chat Completion.
 
 options:
-    name:
-        description: This is the message to send to the test module.
+    endpoint_url:
+        description: OpenAI Endpoint URL (i.e. http://127.0.0.1:8000/v1)
         required: true
         type: str
-    new:
-        description:
-            - Control to demo if the result of this module is changed or not.
-            - Parameter description can be a list as well.
+    model_name:
+        description: OpenAI Model Name (must match server expectations)
+        required: true
+        type: str
+    user_content:
+        description: User Content Message (i.e. Your prompt)
+        required: true
+        type: str
+    system_content:
+        description: System Content Message (i.e. Server context to consider when generating response to prompt)
         required: false
-        type: bool
+        type: str
+    api_key:
+        description: OpenAI API Key
+        required: false
+        type: str
+    timeout:
+        description: Override connection timeout
+        required: false
+        type: int
+    tls_insecure:
+        description: Flag indicating whether to require TLS verification
+        required: false
+        type: str
+    tls_client_cert:
+        description: TLS Client Certificate file path
+        required: false
+        type: str
+    tls_client_key:
+        description: TLS Client Certificate Key
+        required: false
+        type: str
+    tls_client_passwd:
+        description: TLS Client Certificate Password
+        required: false
+        type: str
+    temperature:
+        description: Temperature
+        required: false
+        type: float
+    max_tokens:
+        description: Maximum Number of Tokens
+        required: false
+        type: int
+    top_p:
+        description: Top P
+        required: false
+        type: int
+    frequency_penalty:
+        description: Frequency Penalty
+        required: false
+        type: int
+    presence_penalty:
+        description: Presence Penalty
+        required: false
+        type: int
 # Specify this value according to your collection
 # in format of namespace.collection.doc_fragment_name
 # extends_documentation_fragment:
@@ -39,34 +89,16 @@ author:
 
 EXAMPLES = r'''
 # Pass in a message
-- name: Test with a message
-  my_namespace.my_collection.my_test:
-    name: hello world
+  - name: Run OpenAI Chat Module
+    openai-chat:
+      endpoint_url: 'http://127.0.0.1:8000/v1'
+      model_name: 'models/merlinite-7b-lab-Q4_K_M.gguf'
+      user_content: 'Hello AI Platform!  How are you today?'
 
-# pass in a message and have changed true
-- name: Test with a message and changed output
-  my_namespace.my_collection.my_test:
-    name: hello world
-    new: true
-
-# fail the module
-- name: Test failure of the module
-  my_namespace.my_collection.my_test:
-    name: fail me
 '''
 
 RETURN = r'''
 # These are examples of possible return values, and in general should use other names for return values.
-original_message:
-    description: The original name param that was passed in.
-    type: str
-    returned: always
-    sample: 'hello world'
-message:
-    description: The output message that the test module generates.
-    type: str
-    returned: always
-    sample: 'goodbye'
 '''
 
 from ansible.module_utils.basic import AnsibleModule
@@ -81,9 +113,9 @@ def run_module():
         model_name=dict(type='str', required=True),
         user_content=dict(type='str', required=True),
         system_content=dict(type='str', required=False, default=None),
-        tls_insecure=dict(type='bool', required=False, default=False),
         api_key=dict(type='str', required=False, default='api_key'),
         timeout=dict(type='int', required=False, default=30),
+        tls_insecure=dict(type='bool', required=False, default=False),
         tls_client_cert=dict(type='str', required=False, default=None),
         tls_client_key=dict(type='str', required=False, default=None),
         tls_client_passwd=dict(type='str', required=False, default=None, no_log=True),
