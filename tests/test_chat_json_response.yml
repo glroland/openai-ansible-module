@@ -1,0 +1,13 @@
+- name: Test w/Good URL Data that assumes Chat server is up and running
+  hosts: localhost
+  tasks:
+  - name: Run OpenAI Chat Module
+    openai-chat:
+      endpoint_url: 'http://127.0.0.1:8000/v1'
+      model_name: 'models/merlinite-7b-lab-Q4_K_M.gguf'
+      user_content: 'What is the current date and time?'
+      system_content: 'You are a computer who answers in JSON format.'
+    register: testout
+  - name: dump test output
+    debug:
+      msg: '{{ testout }}'
