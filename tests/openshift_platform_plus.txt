@@ -1,0 +1,33 @@
+OpenShift Platform Plus
+
+Red Hat® OpenShift Platform Plus is a unified platform to build, modernize, and deploy applications at scale. Multicluster security, compliance, application and data management work across infrastructures to provide consistency throughout the software supply chain. Red Hat OpenShift Platform Plus helps you work smarter and faster with a complete set of services for bringing apps to market on your hybrid cloud.
+
+OpenShift Platform Plus is a bundle that includes OpenShift Container Platform, Advanced Cluster Management for Kubernetes, Advanced Cluster Security for Kuberntes, OpenShift Data Foundation and Quay.
+
+OpenShift Container Platform
+
+Red Hat OpenShift Container Platform is a consistent hybrid cloud foundation for building and scaling containerized applications. Red Hat OpenShift is trusted by thousands of customers in every industry to deliver business-critical applications, whether they’re migrating existing workloads to the cloud or building new experiences for customers. It’s also backed by one of the leading Kubernetes contributors, Red Hat. 
+
+Advanced Cluster Management for Kubernetes
+
+Red Hat Advanced Cluster Management for Kubernetes controls clusters and applications from a single console, with built-in security policies. Extend the value of Red Hat OpenShift® by deploying apps, managing multiple clusters, and enforcing policies across multiple clusters at scale. Red Hat’s solution ensures compliance, monitors usage, and maintains consistency.
+
+Red Hat Advanced Cluster Management for Kubernetes is included with Red Hat OpenShift Platform Plus, a complete set of powerful, optimized tools to secure, protect, and manage your apps.
+
+Advanced Cluster Security for Kubernetes
+
+Red Hat Advanced Cluster Security for Kubernetes is a Kubernetes-native security platform that equips you to build, deploy, and run cloud-native applications with more security. The solution helps protect containerized Kubernetes workloads in all major clouds and hybrid platforms, including Red Hat OpenShift, Amazon Elastic Kubernetes Service (EKS), Microsoft Azure Kubernetes Service (AKS), and Google Kubernetes Engine (GKE).
+
+Red Hat Advanced Cluster Security for Kubernetes is included with Red Hat OpenShift Platform Plus, a complete set of powerful, optimized tools to secure, protect, and manage your apps.
+
+OpenShift Data Foundation
+
+Red Hat OpenShift Data Foundation—previously Red Hat OpenShift Container Storage—is software-defined storage for containers. Red Hat OpenShift Data Foundation helps teams develop and deploy applications quickly and efficiently across clouds.
+
+Red Hat OpenShift Data Foundation is included with Red Hat OpenShift Platform Plus, a complete set of powerful, optimized tools to secure, protect, and manage your apps.
+
+Quay
+
+Red Hat Quay is a security-focused and scalable private registry platform for managing content across globally distributed datacenter and cloud environments. It provides a single and resilient content repository for delivering containerized software to development and production across Red Hat OpenShift® and Kubernetes clusters. Red Hat Quay is a distributed and highly available container image registry for your enterprise.
+
+Red Hat Quay is included with Red Hat OpenShift Platform Plus, a complete set of powerful, optimized tools to secure, protect, and manage your apps. 
