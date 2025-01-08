@@ -1,0 +1,25 @@
+- name: Test analysis of an out of memory issue with an application
+  hosts: localhost
+  tasks:
+  - name: Run OpenAI Chat Module
+    openai-chat:
+      endpoint_url: 'http://envision:11434/v1'
+      model_name: 'granite3.1-dense:8b'
+      user_content: 'PostgreSQL Error #28000
+        2025-01-08T12:48:22.057-05:00 ERROR 5420 --- [sqlfail] [nio-8080-exec-1] c.glroland.sqlfail.MyServiceController   : Caught SQLException while running query
+
+        org.postgresql.util.PSQLException: FATAL: role "test" does not exist'
+      system_content: 'You are a technical expert specializing in Spring Boot microservices, PostgreSQL databases, and Linux systems. Your task is to analyze the provided log file snippet and diagnose the cause of the system outage. Your response should follow this JSON format:
+          {
+            "rootCause": "",
+            "escalateTo": "",
+            "remediationSteps": []
+          }
+          Describe the root cause of the issue in the "rootCause" field, providing a concise textual explanation based on the log file snippet.
+          Identify the best-suited role to address the issue in the "escalateTo" field (Developer, DBA, Server Engineer, Network Engineer, DevOps Engineer).
+          List recommended steps for additional analysis or remediation in the "remediationSteps" array, providing actionable text strings that could help resolve the incident or gather more information.
+          '
+    register: testout
+  - name: dump test output
+    debug:
+      msg: '{{ testout["response"] }}'

@@ -14,3 +14,6 @@ smokesummarize:
 
 test:
 	for testfile in ./tests/*.yml; do ANSIBLE_LIBRARY=./library ansible-playbook $$testfile; done
+
+techsupport:
+	for testfile in ./tests/test_techsupport_*.yml; do ANSIBLE_LIBRARY=./library ansible-playbook $$testfile; done
