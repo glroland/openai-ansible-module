@@ -1,0 +1,15 @@
+- name: Test w/Good URL Data that assumes Chat server is up and running
+  hosts: localhost
+  tasks:
+  - name: Run OpenAI Chat Module
+    openai-summarize:
+      endpoint_url: 'http://127.0.0.1:8000/v1'
+      model_name: 'models/merlinite-7b-lab-Q4_K_M.gguf'
+      dir_path: '.'
+      file_regex: 'openshift_pod_log_fragment.log'
+#      prompt_template: 'Summarize errors and anomalies: {text}'
+#      prompt_template: 'With a simple true or false response, are there errors being raised in the following log file: {text}'
+    register: testout
+  - name: dump test output
+    debug:
+      msg: '{{ testout }}'

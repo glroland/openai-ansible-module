@@ -1,0 +1,12 @@
+- name: Test w/Good URL Data that assumes Chat server is up and running
+  hosts: localhost
+  tasks:
+  - name: Run OpenAI Chat Module
+    openai-chat:
+      endpoint_url: 'http://127.0.0.1:8000/v1'
+      model_name: 'models/merlinite-7b-lab-Q4_K_M.gguf'
+      user_content: 'Summarize the health of a system that is failing.  At one minute intervals, CPU utilization was 20%, 55%, 90%, 10%, 95%. At one minute intervals, Memory utilization was 5%, 25%, 55%, 80%, 99%.  At one miniute intervals, disk utilization was 95%, 96%, 97%, 98%, 100%.  At one minute intervals, ping latency was 10ms, 12ms, 11ms, 15ms, 1000ms.'
+    register: testout
+  - name: dump test output
+    debug:
+      msg: '{{ testout }}'
