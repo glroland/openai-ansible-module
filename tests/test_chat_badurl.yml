@@ -4,7 +4,8 @@
   - name: Run OpenAI Chat Module
     openai-chat:
       endpoint_url: 'http://1010.1010:8000/v1'
-      model_name: 'models/merlinite-7b-lab-Q4_K_M.gguf'
+      api_key: 'no-key-needed'
+      model_name: 'garbagemodelname'
       user_content: 'Compose a poem that explains the concept of recursion in programming.'
     register: testout
   - name: dump test output

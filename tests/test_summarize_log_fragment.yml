@@ -3,10 +3,11 @@
   tasks:
   - name: Run OpenAI Chat Module
     openai-summarize:
-      endpoint_url: 'http://127.0.0.1:8000/v1'
-      model_name: 'models/merlinite-7b-lab-Q4_K_M.gguf'
+      endpoint_url: '{{ config_openai_endpoint }}'
+      api_key: '{{ config_openai_token }}'
+      model_name: '{{ config_openai_model }}'
       dir_path: '.'
-      file_regex: 'openshift_pod_log_fragment.log'
+      file_regex: 'openshift_pod_log_fragment.txt'
 #      prompt_template: 'Summarize errors and anomalies: {text}'
 #      prompt_template: 'With a simple true or false response, are there errors being raised in the following log file: {text}'
     register: testout

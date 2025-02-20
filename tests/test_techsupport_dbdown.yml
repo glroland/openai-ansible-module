@@ -3,8 +3,9 @@
   tasks:
   - name: Run OpenAI Chat Module
     openai-chat:
-      endpoint_url: 'http://envision:11434/v1'
-      model_name: 'granite3.1-dense:8b'
+      endpoint_url: '{{ config_openai_endpoint }}'
+      api_key: '{{ config_openai_token }}'
+      model_name: '{{ config_openai_model }}'
       user_content: 'PostgreSQL Error #08001
           2025-01-07T16:49:40.703-05:00 ERROR 5420 --- [sqlfail] [nio-8080-exec-3] c.glroland.sqlfail.MyServiceController   : Caught SQLException while running query
 

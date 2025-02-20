@@ -3,8 +3,9 @@
   tasks:
   - name: Run OpenAI Chat Module
     openai-chat:
-      endpoint_url: 'http://envision:11434/v1'
-      model_name: 'granite3.1-dense:8b'
+      endpoint_url: '{{ config_openai_endpoint }}'
+      api_key: '{{ config_openai_token }}'
+      model_name: '{{ config_openai_model }}'
       user_content: 'Servlet.service() for servlet [dispatcherServlet] in context with path [] threw exception [Request processing failed: java.lang.NullPointerException: Required field is empty] with root cause
 
           java.lang.NullPointerException: Required field is empty'

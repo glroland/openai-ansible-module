@@ -1,0 +1,6 @@
+ansible-core
+openai
+langchain
+langchain-openai
+langchain_community
+unstructured
