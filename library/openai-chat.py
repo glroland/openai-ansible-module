@@ -222,30 +222,33 @@ def run_module():
         )
 
         if completion.choices[0].message.tool_calls != None:
-            tool_call = completion.choices[0].message.tool_calls[0]
-            tool_name = tool_call.function.name
-            args = json.loads(tool_call.function.arguments)
-            module.warn(f"Tool Invocation Requested by LLM: {tool_name} with args: {args}")
+            num_tool_calls = len(completion.choices[0].message.tool_calls)
+            tool_counter = 0
 
-            # Invoke the appropriate tool
-            invoked_flag = False
-            tool_invocation_result = None
-            for tool_module in tool_modules_list:
-                if tool_module.tool_name == tool_name:
-                    invoked_flag = True
-                    tool_invocation_result = tool_module.tool_function(module, args)
-                    break
-            if not invoked_flag:
-                module.fail_json(msg=f"Unable to find tool module corresponding to tool request: {tool_name}", **result)
+            for tool_call in completion.choices[0].message.tool_calls:
+                tool_counter += 1
+                tool_name = tool_call.function.name
+                args = json.loads(tool_call.function.arguments)
+                module.warn(f"Tool Invocation ({tool_counter} of {num_tool_calls}) Requested by LLM: {tool_name} with args: {args}")
 
-            #contentMessages.append(completion.choices[0].message)
+                # Invoke the appropriate tool
+                invoked_flag = False
+                tool_invocation_result = None
+                for tool_module in tool_modules_list:
+                    if tool_module.tool_name == tool_name:
+                        invoked_flag = True
+                        tool_invocation_result = tool_module.tool_function(module, args)
+                        break
+                if not invoked_flag:
+                    module.fail_json(msg=f"Unable to find tool module corresponding to tool request: {tool_name}", **result)
 
-            contentMessages.append({
-                "role": "tool",
-                "tool_call_id": tool_call.id,
-                "content": str(tool_invocation_result) + " degrees farhenheit"
-            })
-            module.warn(str(contentMessages))
+                #contentMessages.append(completion.choices[0].message)
+
+                contentMessages.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": str(tool_invocation_result) + " degrees farhenheit"
+                })
 
             completion = openai_client.chat.completions.create(
                 model=module.params['model_name'],
