@@ -1,0 +1,15 @@
+- name: Tests a basic scenario where a function is invoked
+  hosts: localhost
+  tasks:
+  - name: Run OpenAI Chat Module
+    openai-chat:
+      endpoint_url: '{{ config_openai_endpoint }}'
+      api_key: '{{ config_openai_token }}'
+      model_name: '{{ config_openai_model }}'
+      user_content: 'What is the weather like in Atlanta today?'
+      system_content: 'You are a friendly chatbot who always answers politely and with brief responses.'
+      tool_modules: 'tool-weather.py'
+    register: testout
+  - name: dump test output
+    debug:
+      msg: '{{ testout["response"] }}'

@@ -1,7 +1,8 @@
 # Configuration
 openai_endpoint ?= http://envision:11434/v1
 openai_token ?= no-token-needed
-openai_model ?= granite3.1-dense:8b
+#openai_model ?= granite3.1-dense:8b
+openai_model ?= llama3.2
 
 install:
 	pip install -r requirements.txt
@@ -16,3 +17,6 @@ smoketest: smoketest.chat smoketest.summarize
 
 test:
 	for testfile in ./tests/*.yml; do ANSIBLE_LIBRARY=./library ansible-playbook -e 'config_openai_endpoint=$(openai_endpoint) config_openai_token=$(openai_token) config_openai_model=$(openai_model)' $$testfile; done
+
+unittest:
+	for testfile in ./tests/test_tool_*.yml; do ANSIBLE_LIBRARY=./library ansible-playbook -e 'config_openai_endpoint=$(openai_endpoint) config_openai_token=$(openai_token) config_openai_model=$(openai_model)' $$testfile; done

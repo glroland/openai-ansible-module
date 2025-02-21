@@ -78,6 +78,10 @@ options:
         description: Presence Penalty
         required: false
         type: int
+    tool_modules:
+        description: Comma separated list of Python modules containing tools to load
+        required: false
+        type: str
 # Specify this value according to your collection
 # in format of namespace.collection.doc_fragment_name
 # extends_documentation_fragment:
@@ -105,6 +109,18 @@ from ansible.module_utils.basic import AnsibleModule
 import openai
 from openai import OpenAI
 import httpx
+import importlib.util
+import sys
+import json
+
+def dynamically_load_python_module(file_path, module_name=None):
+    if module_name is None:
+        module_name = "my_module"
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
 
 def run_module():
     # define available arguments/parameters a user can pass to the module
@@ -123,7 +139,8 @@ def run_module():
         max_tokens=dict(type='int', required=False, default=100),
         top_p=dict(type='int', required=False, default=1),
         frequency_penalty=dict(type='int', required=False, default=0),
-        presence_penalty=dict(type='int', required=False, default=0)
+        presence_penalty=dict(type='int', required=False, default=0),
+        tool_modules=dict(type='str', required=False, default=None)
     )
     
     # seed the result dict in the object
@@ -169,6 +186,22 @@ def run_module():
         cert = (module.params['tls_client_cert'], module.params['tls_client_key'], module.params['tls_client_passwd'])
     tls_verify = not module.params['tls_insecure']
 
+    # Process tools modules list provided as input
+    tool_modules_list = openai.NOT_GIVEN
+    if module.params['tool_modules'] != None:
+        tool_modules_filenames = module.params['tool_modules'].split(',')
+
+        tool_modules_list = []
+        tools_list_for_openai = []
+        module.warn(f"Including Tool Calls in LLM Invocation: {module.params['tool_modules']}")
+
+        for tool_module_filename in tool_modules_filenames:
+            file_path = f"/Users/lroland/Projects/github.com/openai-ansible-module/library/{tool_module_filename}"
+            dynamic_tool_module = dynamically_load_python_module(file_path)
+
+            tool_modules_list.append(dynamic_tool_module)
+            tools_list_for_openai.append(dynamic_tool_module.tool_definition)
+
     try:
         openai_client = OpenAI(
             base_url = module.params['endpoint_url'],
@@ -184,8 +217,46 @@ def run_module():
             max_tokens=module.params['max_tokens'],
             top_p=module.params['top_p'],
             frequency_penalty=module.params['frequency_penalty'],
-            presence_penalty=module.params['presence_penalty']
+            presence_penalty=module.params['presence_penalty'],
+            tools=tools_list_for_openai
         )
+
+        if completion.choices[0].message.tool_calls != None:
+            tool_call = completion.choices[0].message.tool_calls[0]
+            tool_name = tool_call.function.name
+            args = json.loads(tool_call.function.arguments)
+            module.warn(f"Tool Invocation Requested by LLM: {tool_name} with args: {args}")
+
+            # Invoke the appropriate tool
+            invoked_flag = False
+            tool_invocation_result = None
+            for tool_module in tool_modules_list:
+                if tool_module.tool_name == tool_name:
+                    invoked_flag = True
+                    tool_invocation_result = tool_module.tool_function(module, args)
+                    break
+            if not invoked_flag:
+                module.fail_json(msg=f"Unable to find tool module corresponding to tool request: {tool_name}", **result)
+
+            #contentMessages.append(completion.choices[0].message)
+
+            contentMessages.append({
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "content": str(tool_invocation_result) + " degrees farhenheit"
+            })
+            module.warn(str(contentMessages))
+
+            completion = openai_client.chat.completions.create(
+                model=module.params['model_name'],
+                messages=contentMessages,
+                temperature=module.params['temperature'],
+                max_tokens=module.params['max_tokens'],
+                top_p=module.params['top_p'],
+                frequency_penalty=module.params['frequency_penalty'],
+                presence_penalty=module.params['presence_penalty'],
+                tools=tools_list_for_openai
+            )
 
         result['response'] = completion.choices[0].message.content
 
