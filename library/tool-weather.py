@@ -2,6 +2,8 @@ import requests
 
 tool_name = "get_weather"
 
+tool_prompt_addendum = f"Always use the {tool_name} tool to get the current temperature in fahrenheit for a given location or city based on its latitude and longitude."
+
 def tool_function(ansible_module, args):
     latitude = args["latitude"]
     longitude = args["longitude"]

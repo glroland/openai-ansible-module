@@ -169,25 +169,19 @@ def run_module():
     if module.check_mode:
         module.exit_json(**result)
 
-    # Create OpenAI chat message input
-    contentMessages = []
-    userContentMessage = {"role": "user", "content": module.params['user_content']}
-    if module.params['system_content'] == None:
-        contentMessages = [ userContentMessage ]
-    else:
-        contentMessages = [ {"role": "system", "content": module.params['system_content']}, userContentMessage ]
-    
-    # store requested chat messages
-    result['original_messages'] = contentMessages
-
     # Apply TLS security to API Call based on input parameters
     cert = None
     if module.params['tls_client_cert'] != None or module.params['tls_client_key'] != None or module.params['tls_client_passwd'] != None:
         cert = (module.params['tls_client_cert'], module.params['tls_client_key'], module.params['tls_client_passwd'])
     tls_verify = not module.params['tls_insecure']
 
+    # build the system prompt
+    system_prompt = module.params['system_content']
+    if system_prompt == None:
+        system_prompt = ""
+
     # Process tools modules list provided as input
-    tool_modules_list = openai.NOT_GIVEN
+    tools_list_for_openai = openai.NOT_GIVEN
     if module.params['tool_modules'] != None:
         tool_modules_filenames = module.params['tool_modules'].split(',')
 
@@ -201,6 +195,19 @@ def run_module():
 
             tool_modules_list.append(dynamic_tool_module)
             tools_list_for_openai.append(dynamic_tool_module.tool_definition)
+            system_prompt += " " + dynamic_tool_module.tool_prompt_addendum
+    system_prompt = system_prompt.strip()
+
+    # Create OpenAI chat message input
+    contentMessages = []
+    userContentMessage = {"role": "user", "content": module.params['user_content']}
+    if system_prompt == None or len(system_prompt) == 0:
+        contentMessages = [ userContentMessage ]
+    else:
+        contentMessages = [ {"role": "system", "content": system_prompt}, userContentMessage ]
+    
+    # store requested chat messages
+    result['original_messages'] = contentMessages
 
     try:
         openai_client = OpenAI(
