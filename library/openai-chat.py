@@ -82,6 +82,11 @@ options:
         description: Comma separated list of Python modules containing tools to load
         required: false
         type: str
+    log_messages:
+        description: Flag indicating whether to log input messages to the LLM
+        required: false
+        type: bool
+    
 # Specify this value according to your collection
 # in format of namespace.collection.doc_fragment_name
 # extends_documentation_fragment:
@@ -140,7 +145,8 @@ def run_module():
         top_p=dict(type='int', required=False, default=1),
         frequency_penalty=dict(type='int', required=False, default=0),
         presence_penalty=dict(type='int', required=False, default=0),
-        tool_modules=dict(type='str', required=False, default=None)
+        tool_modules=dict(type='str', required=False, default=None),
+        log_messages=dict(type='bool', required=False, default=False)
     )
     
     # seed the result dict in the object
@@ -217,6 +223,9 @@ def run_module():
             http_client=httpx.Client(cert=cert, verify=tls_verify)
         )
 
+        if module.params['log_messages']:
+            module.warn(f"Input Messages to LLM: {contentMessages}")
+
         completion = openai_client.chat.completions.create(
             model=module.params['model_name'],
             messages=contentMessages,
@@ -254,8 +263,11 @@ def run_module():
                 contentMessages.append({
                     "role": "tool",
                     "tool_call_id": tool_call.id,
-                    "content": str(tool_invocation_result) + " degrees farhenheit"
+                    "content": str(tool_invocation_result)
                 })
+
+            if module.params['log_messages']:
+                module.warn(f"Input Messages to LLM: {contentMessages}")
 
             completion = openai_client.chat.completions.create(
                 model=module.params['model_name'],

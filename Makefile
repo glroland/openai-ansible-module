@@ -19,4 +19,4 @@ test:
 	for testfile in ./tests/*.yml; do ANSIBLE_LIBRARY=./library ansible-playbook -e 'config_openai_endpoint=$(openai_endpoint) config_openai_token=$(openai_token) config_openai_model=$(openai_model)' $$testfile; done
 
 unittest:
-	for testfile in ./tests/test_tool_*.yml; do ANSIBLE_LIBRARY=./library ansible-playbook -e 'config_openai_endpoint=$(openai_endpoint) config_openai_token=$(openai_token) config_openai_model=$(openai_model)' $$testfile; done
+	for testfile in ./tests/test_aiops_*.yml; do ANSIBLE_LIBRARY=./library ansible-playbook -e 'config_openai_endpoint=$(openai_endpoint) config_openai_token=$(openai_token) config_openai_model=$(openai_model)' $$testfile; done

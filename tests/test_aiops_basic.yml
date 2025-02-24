@@ -1,0 +1,16 @@
+- name: Accepts an audit event from Ansible and uses the LLM to analyze and recommend response
+  hosts: localhost
+  tasks:
+  - name: Run OpenAI Chat Module
+    openai-chat:
+      endpoint_url: '{{ config_openai_endpoint }}'
+      api_key: '{{ config_openai_token }}'
+      model_name: '{{ config_openai_model }}'
+      user_content: 'How many log entries exist for the machine named "ocpworker1"?'
+      system_content: 'You are an on-call IT support associate who always responds politely and with brief responses.'
+      tool_modules: 'tool-elastic-search.py'
+      log_messages: false
+    register: testout
+  - name: dump test output
+    debug:
+      msg: '{{ testout["response"] }}'
